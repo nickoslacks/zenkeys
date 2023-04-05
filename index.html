@@ -219,9 +219,28 @@ if (keyCode === 32) {
   }
 }
 
-function keyReleased() {
-  let keyToAmp = {
-    '1': osc, '2': osc, '3': osc, '4': osc, '5': osc,
+
+    function keyPressed() {
+      if (!audioEnabled) {
+        return;
+      }
+
+      if (keyCode === 32) {
+        playComposition();
+        return;
+      }
+
+      let freq = keyToFreq[key.toLowerCase()];
+      if (freq) {
+        targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
+        targetHue = keyToHue(key);
+        playNote(key, freq);
+      }
+    }
+
+    function keyReleased() {
+      let keyToAmp = {
+        '1': osc, '2': osc, '3': osc, '4': osc, '5': osc,
     '6': osc2, '7': osc2, '8': osc2, '9': osc2, '0': osc2,
     'q': osc3, 'w': osc3, 'e': osc3, 'r': osc3, 't': osc3,
     'y': osc, 'u': osc, 'i': osc, 'o': osc, 'p': osc,
@@ -229,48 +248,63 @@ function keyReleased() {
     'h': osc3, 'j': osc3, 'k': osc3, 'l': osc3,
     'z': osc, 'x': osc, 'c': osc, 'v': osc, 'b': osc,
     'n': osc2, 'm': osc2
-  };
+      };
 
-  let amp = keyToAmp[key.toLowerCase()];
-  if (amp) {
-    amp.amp(0, 0.5);
-  }
-}
+      let amp = keyToAmp[key.toLowerCase()];
+      if (amp) {
+        releaseNote(key);
+      }
+    }
 
-function playComposition() {
-  const composition = [
-    { key: 'd', duration: 500 },
-    { key: 'f', duration: 500 },
-    { key: 'g', duration: 500 },
-    { key: 'h', duration: 500 },
-    { key: 'j', duration: 500 },
-    { key: 'k', duration: 500 },
-    { key: 'l', duration: 500 }
-  ];
+    function playNote(key, freq) {
+      let oscToPlay;
+      if ('12345qwert'.includes(key)) {
+        oscToPlay = osc;
+      } else if ('67890yuiop'.includes(key)) {
+        oscToPlay = osc2;
+      } else {
+        oscToPlay = osc3;
+      }
+      oscToPlay.freq(freq);
+      oscToPlay.amp(1, 0.5);
+    }
 
-  let currentTime = 0;
+    function releaseNote(key) {
+      let keyToAmp = {
+        // ...
+      };
 
-  for (let note of composition) {
-    setTimeout(() => {
-      playNote(note.key);
-    }, currentTime);
+      let amp = keyToAmp[key.toLowerCase()];
+      if (amp) {
+        amp.amp(0, 0.5);
+      }
+    }
 
-    setTimeout(() => {
-      releaseNote(note.key);
-    }, currentTime + note.duration);
+    function playComposition() {
+      const composition = [
+        // ...
+      ];
 
-    currentTime += note.duration;
-  }
-}
+      let currentTime = 0;
 
+      for (let note of composition) {
+        setTimeout(() => {
+          let freq = keyToFreq[note.key];
+          playNote(note.key, freq);
+        }, currentTime);
 
-document.getElementById("enableAudio").addEventListener("click", function () {
-  audioEnabled = true;
-  userStartAudio();
-});
+        setTimeout(() => {
+          releaseNote(note.key);
+        }, currentTime + note.duration);
 
+        currentTime += note.duration;
+      }
+    }
 
-
+    document.getElementById("enableAudio").addEventListener("click", function () {
+      audioEnabled = true;
+      userStartAudio();
+    });
   </script>
 </body>
 </html>
