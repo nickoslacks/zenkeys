@@ -32,9 +32,8 @@ let targetScaleFactor = 0.02;
 let currentHue = 0;
 let targetHue = 0;
 let audioEnabled = false;
-let melody = ['c', 'c', 'g', 'g', 'a', 'a', 'g', 'f', 'f', 'e', 'e', 'd', 'd', 'c'];
-let melodyIndex = 0;
-
+let sequence = ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'];
+let sequenceIndex = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -178,6 +177,24 @@ function drawShape() {
   endShape();
 }
 
+function playSequence() {
+  if (sequenceIndex < sequence.length) {
+    let key = sequence[sequenceIndex];
+    let freq = keyToFreq[key.toLowerCase()];
+    if (freq) {
+      targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
+      targetHue = keyToHue(key);
+      osc.freq(freq);
+      osc2.freq(freq + 200);
+      osc3.freq(freq + 400);
+      envelope.play();
+      sequenceIndex++;
+    }
+  } else {
+    sequenceIndex = 0;
+  }
+}
+
 function keyToHue(key) {
   const keys = [
     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -195,12 +212,10 @@ function keyPressed() {
     return;
   }
 
-  // If the space bar is pressed, play the melody
+  // If the space bar is pressed, play the sequence
   if (keyCode === 32) {
-    key = melody[melodyIndex % melody.length];
-    melodyIndex++;
+    playSequence();
   }
-
 
   let keyToFreq = {
     '1': 2093.00, '2': 1975.53, '3': 1864.66, '4': 1760.00, '5': 1661.22,
@@ -213,7 +228,8 @@ function keyPressed() {
     'n': 293.66, 'm': 277.18
   };
 
-   let freq = keyToFreq[key.toLowerCase()];
+  let key = key.toLowerCase();
+  let freq = keyToFreq[key];
   if (freq) {
     targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
     targetHue = keyToHue(key);
