@@ -192,16 +192,30 @@ function keyPressed() {
     return;
   }
 
-  if (keyCode === 32) {
+if (keyCode === 32) {
     playComposition();
     return;
   }
 
-  let freq = keyToFreq[key.toLowerCase()];
+  let keyToFreq = {
+    '1': 2093.00, '2': 1975.53, '3': 1864.66, '4': 1760.00, '5': 1661.22,
+    '6': 1567.98, '7': 1479.98, '8': 1396.91, '9': 1318.51, '0': 1244.51,
+    'q': 1174.66, 'w': 1108.73, 'e': 1046.50, 'r': 987.77, 't': 932.33,
+    'y': 880.00, 'u': 830.61, 'i': 783.99, 'o': 739.99, 'p': 698.46,
+    'a': 659.25, 's': 622.25, 'd': 587.33, 'f': 554.37, 'g': 523.25,
+    'h': 493.88, 'j': 466.16, 'k': 440.00, 'l': 415.30,
+    'z': 392.00, 'x': 369.99, 'c': 349.23, 'v': 329.63, 'b': 311.13,
+    'n': 293.66, 'm': 277.18
+  };
+
+   let freq = keyToFreq[key.toLowerCase()];
   if (freq) {
     targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
     targetHue = keyToHue(key);
-    playNote(key, freq);
+    osc.freq(freq);
+    osc2.freq(freq + 200);
+    osc3.freq(freq + 400);
+    envelope.play();
   }
 }
 
@@ -219,50 +233,13 @@ function keyReleased() {
 
   let amp = keyToAmp[key.toLowerCase()];
   if (amp) {
-    releaseNote(key);
+    amp.amp(0, 0.5);
   }
 }
 
 
-    function playNote(key, freq) {
-      let oscToPlay;
-      if ('12345qwert'.includes(key)) {
-        oscToPlay = osc;
-      } else if ('67890yuiop'.includes(key)) {
-        oscToPlay = osc2;
-      } else {
-        oscToPlay = osc3;
-      }
-      oscToPlay.freq(freq);
-      oscToPlay.amp(1, 0.5);
-    }
 
-    function releaseNote(key) {
-      let keyToAmp = {
-        // ...
-      };
 
-      let amp = keyToAmp[key.toLowerCase()];
-      if (amp) {
-        amp.amp(0, 0.5);
-      }
-    }
-
-    function playComposition() {
-      const composition = [
-        // ...
-      ];
-
-      let currentTime = 0;
-
-      for (let note of composition) {
-        setTimeout(() => {
-          let freq = keyToFreq[note.key];
-          playNote(note.key, freq);
-        }, currentTime);
-
-        setTimeout(() => {
-          releaseNote(note
 document.getElementById("enableAudio").addEventListener("click", function () {
   audioEnabled = true;
   userStartAudio();
