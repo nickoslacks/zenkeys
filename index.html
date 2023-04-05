@@ -192,67 +192,37 @@ function keyPressed() {
     return;
   }
 
-if (keyCode === 32) {
+  if (keyCode === 32) {
     playComposition();
     return;
   }
 
-  let keyToFreq = {
-    '1': 2093.00, '2': 1975.53, '3': 1864.66, '4': 1760.00, '5': 1661.22,
-    '6': 1567.98, '7': 1479.98, '8': 1396.91, '9': 1318.51, '0': 1244.51,
-    'q': 1174.66, 'w': 1108.73, 'e': 1046.50, 'r': 987.77, 't': 932.33,
-    'y': 880.00, 'u': 830.61, 'i': 783.99, 'o': 739.99, 'p': 698.46,
-    'a': 659.25, 's': 622.25, 'd': 587.33, 'f': 554.37, 'g': 523.25,
-    'h': 493.88, 'j': 466.16, 'k': 440.00, 'l': 415.30,
-    'z': 392.00, 'x': 369.99, 'c': 349.23, 'v': 329.63, 'b': 311.13,
-    'n': 293.66, 'm': 277.18
-  };
-
-   let freq = keyToFreq[key.toLowerCase()];
+  let freq = keyToFreq[key.toLowerCase()];
   if (freq) {
     targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
     targetHue = keyToHue(key);
-    osc.freq(freq);
-    osc2.freq(freq + 200);
-    osc3.freq(freq + 400);
-    envelope.play();
+    playNote(key, freq);
   }
 }
-    function keyPressed() {
-      if (!audioEnabled) {
-        return;
-      }
 
-      if (keyCode === 32) {
-        playComposition();
-        return;
-      }
+function keyReleased() {
+  let keyToAmp = {
+    '1': osc, '2': osc, '3': osc, '4': osc, '5': osc,
+    '6': osc2, '7': osc2, '8': osc2, '9': osc2, '0': osc2,
+    'q': osc3, 'w': osc3, 'e': osc3, 'r': osc3, 't': osc3,
+    'y': osc, 'u': osc, 'i': osc, 'o': osc, 'p': osc,
+    'a': osc2, 's': osc2, 'd': osc2, 'f': osc2, 'g': osc2,
+    'h': osc3, 'j': osc3, 'k': osc3, 'l': osc3,
+    'z': osc, 'x': osc, 'c': osc, 'v': osc, 'b': osc,
+    'n': osc2, 'm': osc2
+  };
 
-      let freq = keyToFreq[key.toLowerCase()];
-      if (freq) {
-        targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
-        targetHue = keyToHue(key);
-        playNote(key, freq);
-      }
-    }
+  let amp = keyToAmp[key.toLowerCase()];
+  if (amp) {
+    releaseNote(key);
+  }
+}
 
-    function keyReleased() {
-      let keyToAmp = {
-        '1': osc, '2': osc, '3': osc, '4': osc, '5': osc,
-        '6': osc2, '7': osc2, '8': osc2, '9': osc2, '0': osc2,
-        'q': osc3, 'w': osc3, 'e': osc3, 'r': osc3, 't': osc3,
-        'y': osc, 'u': osc, 'i': osc, 'o': osc, 'p': osc,
-        'a': osc2, 's': osc2, 'd': osc2, 'f': osc2, 'g': osc2,
-        'h': osc3, 'j': osc3, 'k': osc3, 'l': osc3,
-        'z': osc, 'x': osc, 'c': osc, 'v': osc, 'b': osc,
-        'n': osc2, 'm': osc2
-      };
-
-      let amp = keyToAmp[key.toLowerCase()];
-      if (amp) {
-        releaseNote(key);
-      }
-    }
 
     function playNote(key, freq) {
       let oscToPlay;
