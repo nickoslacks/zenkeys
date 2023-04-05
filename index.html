@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Sketch</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
+  <style>
+    body {padding: 0; margin: 0;}
+    canvas {display: block;}
+  </style>
+</head>
+<body>
+  <button id="enableAudio">Enable Audio</button>
+  <script>
+    let angle = 0;
+let parameters = [];
+let noiseParams = [];
+let noiseScale = 0.001;
+let frameScale = 0.0905;
+let extreme = false;
+let symmetry = 7;
+let osc;
+let osc2, osc3;
+let filter;
+let envelope;
+let reverb;
+let scaleFactors = [0.015, 0.02, 0.025, 0.03, 0.035];
+let currentScaleFactor = 0.02;
+let targetScaleFactor = 0.02;
+let currentHue = 0;
+let targetHue = 0;
+let audioEnabled = false;
+
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  noFill();
+  colorMode(HSB, 360, 100, 100);
+
+  osc = new p5.Oscillator("sine");
+  osc.amp(0);
+  osc.start();
+
+  filter = new p5.LowPass();
+  osc.disconnect();
+  osc.connect(filter);
+
+  osc2 = new p5.Oscillator("triangle");
+  osc2.amp(0);
+  osc2.start();
+  osc2.disconnect();
+  osc2.connect(filter);
+
+  osc3 = new p5.Oscillator("sawtooth");
+  osc3.amp(0);
+  osc3.start();
+  osc3.disconnect();
+  osc3.connect(filter);
+
+  envelope = new p5.Envelope(0.1, 0.5, 05, 0.95);
+  envelope.setInput(osc);
+
+  reverb = new p5.Reverb();
+  filter.disconnect();
+  filter.connect(reverb);
+  reverb.process(filter, 4, 5);
+
+  for (let i = 0; i < 11; i++) {
+    parameters.push(random(0.1, 2));
+  }
+
+  for (let i = 0; i < 30; i++) {
+    noiseParams.push(random(0.91, 2));
+  }
+}
+
+function draw() {
+  background(12);
+  push();
+  tweek();
+  pop();
+}
+
+function tweek() {
+  let crap = map(sin((frameCount / 100) * parameters[0]), -1, 1, 0, 1);
+  let sat = lerp(30, 50, crap);
+  let bright = lerp(100, 80, crap);
+  let kale = lerp(10, 0.005, crap);
+
+  angle += 0.1;
+
+  strokeWeight(2);
+
+  translate(width / 2, height / 2);
+  
+
+  // Smoothly change the scale factor based on the target value
+  currentScaleFactor += (targetScaleFactor - currentScaleFactor) * 0.05;
+  scale(currentScaleFactor);
+
+  for (let s = 0; s < symmetry; s++) {
+   currentHue += (targetHue - currentHue) * 0.05;
+  let hue = currentHue;
+    stroke(hue, sat, bright);
+
+    push();
+    rotate((TWO_PI * s) / symmetry);
+    drawShape();
+    pop();
+  }
+}
+
+function drawShape() {
+
+  let crap = map(sin((frameCount / 100) * parameters[0]), -1, 1, 0, 1);
+  let kale = lerp(10, 0.05, crap);
+
+  beginShape();
+  for (let i = 0; i <= 900; i += 1) {
+    let x = map(i, -9, 0, -400 * parameters[2], 400 * parameters[3]);
+    let y = sin(radians(i * parameters[4])) * 150;
+    let z = cos(radians(i * kale * parameters[5])) * 150;
+    let q = lerp(10, 150, z / 3);
+
+    let nX = noise(
+      i * noiseScale * noiseParams[0],
+      frameCount * frameScale * noiseParams[1]
+    );
+    let nY = noise(
+      i * noiseScale * noiseParams[2] + 1000,
+      frameCount * frameScale * noiseParams[3]
+    );
+    let pX = lerp(-50, 50, nX);
+    let pY = lerp(-50, 50, nY);
+
+    let lerpFactors = [];
+    for (let j = 0; j < 5; j++) {
+      lerpFactors.push(map(sin((frameCount / 120) * (j + 2)), -1, 1, 0, 1));
+    }
+
+    let v1 = lerp(
+      z + x + pX * noiseParams[0],
+      y - z + pY / noiseParams[1],
+      lerpFactors[0]
+    );
+    let v2 = lerp(
+      z + q + pX * noiseParams[2],
+      y + q + pY / noiseParams[3],
+      lerpFactors[1]
+    );
+    let v3 = lerp(
+      z - x + pX * noiseParams[4],
+      y - q + pY * noiseParams[5],
+      lerpFactors[2]
+    );
+    let v4 = lerp(
+      z - q + pX * noiseParams[6],
+      y + x + pY * noiseParams[7],
+      lerpFactors[3]
+    );
+    let v5 = lerp(
+      z + x - pX * noiseParams[8],
+      y - q - pY * noiseParams[9],
+      lerpFactors[4]
+    );
+
+    vertex(v3, v4);
+    vertex(-v3, v4);
+    vertex(-v3, -v4);
+    vertex(v3, -v4);
+    vertex(-v1, v5);
+    vertex(-v2, -v3);
+  }
+  endShape();
+}
+
+function keyToHue(key) {
+  const keys = [
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+    'z', 'x', 'c', 'v', 'b', 'n', 'm'
+  ];
+  const index = keys.indexOf(key.toLowerCase());
+  return map(index, 0, keys.length - 1, 200, 90);
+}
+
+
+function keyPressed() {
+  if (!audioEnabled) {
+    return;
+  }
+
+  let keyToFreq = {
+    '1': 2093.00, '2': 1975.53, '3': 1864.66, '4': 1760.00, '5': 1661.22,
+    '6': 1567.98, '7': 1479.98, '8': 1396.91, '9': 1318.51, '0': 1244.51,
+    'q': 1174.66, 'w': 1108.73, 'e': 1046.50, 'r': 987.77, 't': 932.33,
+    'y': 880.00, 'u': 830.61, 'i': 783.99, 'o': 739.99, 'p': 698.46,
+    'a': 659.25, 's': 622.25, 'd': 587.33, 'f': 554.37, 'g': 523.25,
+    'h': 493.88, 'j': 466.16, 'k': 440.00, 'l': 415.30,
+    'z': 392.00, 'x': 369.99, 'c': 349.23, 'v': 329.63, 'b': 311.13,
+    'n': 293.66, 'm': 277.18
+  };
+
+   let freq = keyToFreq[key.toLowerCase()];
+  if (freq) {
+    targetScaleFactor = map(freq, 277.18, 2093.00, scaleFactors[0], scaleFactors[4]);
+    targetHue = keyToHue(key);
+    osc.freq(freq);
+    osc2.freq(freq + 200);
+    osc3.freq(freq + 400);
+    envelope.play();
+  }
+}
+
+function keyReleased() {
+  let keyToAmp = {
+    '1': osc, '2': osc, '3': osc, '4': osc, '5': osc,
+    '6': osc2, '7': osc2, '8': osc2, '9': osc2, '0': osc2,
+    'q': osc3, 'w': osc3, 'e': osc3, 'r': osc3, 't': osc3,
+    'y': osc, 'u': osc, 'i': osc, 'o': osc, 'p': osc,
+    'a': osc2, 's': osc2, 'd': osc2, 'f': osc2, 'g': osc2,
+    'h': osc3, 'j': osc3, 'k': osc3, 'l': osc3,
+    'z': osc, 'x': osc, 'c': osc, 'v': osc, 'b': osc,
+    'n': osc2, 'm': osc2
+  };
+
+  let amp = keyToAmp[key.toLowerCase()];
+  if (amp) {
+    amp.amp(0, 0.5);
+  }
+}
+document.getElementById("enableAudio").addEventListener("click", function () {
+  audioEnabled = true;
+  getAudioContext().resume();
+});
+
+
+  </script>
+</body>
+</html>
