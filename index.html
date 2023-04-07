@@ -36,7 +36,7 @@ let audioEnabled = false;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   noFill();
-  colorMode(HSB, 360, 100, 100);
+  colorMode(HSB, 360, 100,100 );
 
   osc = new p5.Oscillator("sine");
   osc.amp(0);
@@ -76,16 +76,16 @@ function setup() {
 }
 
 function draw() {
-  background(12);
+  background(120);
   push();
   tweek();
   pop();
 }
 
 function tweek() {
-  let crap = map(sin((frameCount / 100) * parameters[0]), -1, 1, 0, 1);
-  let sat = lerp(80, 50, crap);
-  let bright = lerp(100, 80, crap);
+  let crap = map(sin((frameCount / 150) * parameters[0]), -1, 1, 0, 1);
+  let sat = lerp(100, 1, crap);
+  let bright = lerp(10, 1, crap);
   let kale = lerp(10, 0.005, crap);
 
   angle += 0.1;
@@ -98,10 +98,11 @@ function tweek() {
   // Smoothly change the scale factor based on the target value
   currentScaleFactor += (targetScaleFactor - currentScaleFactor) * 0.05;
   scale(currentScaleFactor);
+ let hueOffset = frameCount * 0.05;
 
   for (let s = 0; s < symmetry; s++) {
    currentHue += (targetHue - currentHue) * 0.05;
-  let hue = currentHue;
+   let hue = map(noise(s * 01 + hueOffset), 0, 1, 30, 30);
     stroke(hue, sat, bright);
 
     push();
@@ -111,17 +112,20 @@ function tweek() {
   }
 }
 
+
+
 function drawShape() {
 
   let crap = map(sin((frameCount / 100) * parameters[0]), -1, 1, 0, 1);
   let kale = lerp(10, 0.05, crap);
-
+  
   beginShape();
   for (let i = 0; i <= 900; i += 1) {
     let x = map(i, -9, 0, -400 * parameters[2], 400 * parameters[3]);
     let y = sin(radians(i * parameters[4])) * 150;
     let z = cos(radians(i * kale * parameters[5])) * 150;
     let q = lerp(10, 150, z / 3);
+    
 
     let nX = noise(
       i * noiseScale * noiseParams[0],
@@ -136,7 +140,7 @@ function drawShape() {
 
     let lerpFactors = [];
     for (let j = 0; j < 5; j++) {
-      lerpFactors.push(map(sin((frameCount / 120) * (j + 2)), -1, 1, 0, 1));
+      lerpFactors.push(map(sin((frameCount / 220) * (j + 2)), -1, 1, 0, -1));
     }
 
     let v1 = lerp(
@@ -164,6 +168,8 @@ function drawShape() {
       y - q - pY * noiseParams[9],
       lerpFactors[4]
     );
+    
+    
 
     vertex(v3, v4);
     vertex(-v3, v4);
@@ -171,6 +177,10 @@ function drawShape() {
     vertex(v3, -v4);
     vertex(-v1, v5);
     vertex(-v2, -v3);
+    vertex(v1 * cos(v2), v2 * sin(v3));
+    
+
+   
   }
   endShape();
 }
@@ -183,7 +193,7 @@ function keyToHue(key) {
     'z', 'x', 'c', 'v', 'b', 'n', 'm'
   ];
   const index = keys.indexOf(key.toLowerCase());
-  return map(index, 0, keys.length - 1, 200, 90);
+  return map(index, 0, keys.length - 1, 10, 360);
 }
 
 
